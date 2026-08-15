@@ -14,7 +14,7 @@ describe('ImportController (e2e)', () => {
   let termOneId: string;
   let termTwoId: string;
   let jsonFlat100: string;
-  let jsonFlatWithNewTerms: string;
+  let json5FlatWithNewTerms: string;
   let norwayTranslations: string;
 
   beforeEach(async () => {
@@ -27,18 +27,13 @@ describe('ImportController (e2e)', () => {
       translations: new Array(100).fill(0).map((_, index) => ({ term: `term.${index}`, translation: `some ${index}` })),
     })) as string;
 
-    jsonFlatWithNewTerms = (await jsonFlatExporter({
-      translations: [
-        {
-          term: 'term.one',
-          translation: 'eins?',
-        },
-        {
-          term: 'term.three',
-          translation: 'drei ⛄ 😀👍 🍉你好',
-        },
-      ],
-    })) as string;
+    json5FlatWithNewTerms = `{
+      // Existing term: importing this locale must update only its own translation.
+      "term.one": "eins?",
+
+      // New terms should still be created normally from JSON5 input.
+      'term.three': 'drei ⛄ 😀👍 🍉你好',
+    }`;
 
     norwayTranslations = (await jsonFlatExporter({
       translations: [
@@ -235,11 +230,11 @@ describe('ImportController (e2e)', () => {
       });
   });
 
-  it('/api/v1/projects/:projectId/imports (POST) should replace/add translations if locale already exists', async () => {
+  it('/api/v1/projects/:projectId/imports (POST) should import JSON5 and replace/add translations if locale already exists', async () => {
     await request(app.getHttpServer())
       .post(`/api/v1/projects/${testProject.id}/imports?locale=de_DE&format=jsonflat`)
       .set('Authorization', `Bearer ${testingUser.accessToken}`)
-      .attach('file', Buffer.from(jsonFlatWithNewTerms), 'file')
+      .attach('file', Buffer.from(json5FlatWithNewTerms), 'file')
       .expect(200)
       .expect({
         data: {

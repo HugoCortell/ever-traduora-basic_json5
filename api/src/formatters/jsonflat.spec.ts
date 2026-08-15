@@ -30,6 +30,36 @@ test('should parse json flat files', async () => {
   });
 });
 
+test('should parse JSON5 syntax in json flat files', async () => {
+  const input = `{
+      // Single-line comments are valid JSON5.
+      "term.one": "Double quoted value",
+
+      /* Block comments and single-quoted strings are valid JSON5 too. */
+      'term.two': 'Single quoted value',
+
+      TERM_THREE: "Unquoted key and trailing comma",
+  }`;
+
+  const result = await jsonFlatParser(input);
+  expect(result).toEqual({
+    translations: [
+      {
+        term: 'term.one',
+        translation: 'Double quoted value',
+      },
+      {
+        term: 'term.two',
+        translation: 'Single quoted value',
+      },
+      {
+        term: 'TERM_THREE',
+        translation: 'Unquoted key and trailing comma',
+      },
+    ],
+  });
+});
+
 test('should fail if file is malformed, invalid or empty', async () => {
   const inputs = [
     '',

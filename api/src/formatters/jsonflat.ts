@@ -1,7 +1,8 @@
+import * as JSON5 from 'json5';
 import { Exporter, IntermediateTranslationFormat, Parser } from '../domain/formatters';
 
 export const jsonFlatParser: Parser = async (data: string) => {
-  const parsed = JSON.parse(data);
+  const parsed = JSON5.parse(data);
   const translations = [];
   if (Array.isArray(parsed) || typeof parsed !== 'object') {
     throw new Error('JSON contents are not of key:value format');
